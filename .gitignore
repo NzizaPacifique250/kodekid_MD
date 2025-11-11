@@ -32,6 +32,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+# ignore the pubspec.lock file
+pubspec.lock
 
 # Symbolication related
 app.*.symbols
