@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'features/home/presentation/landing_page.dart';
+import 'features/home/presentation/courses_page.dart';
+import 'routes/app_routes.dart';
 
 void main() {
   runApp(const MainApp());
@@ -17,7 +19,11 @@ class MainApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
       ),
-      home: const LandingPage(),
+      initialRoute: AppRoutes.landing,
+      routes: {
+        AppRoutes.landing: (context) => const LandingPage(),
+        AppRoutes.courses: (context) => const CoursesPage(),
+      },
     );
   }
 }

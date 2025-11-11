@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/colored_text.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../routes/app_routes.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -115,7 +116,7 @@ class LandingPage extends StatelessWidget {
                   text: 'Get Started',
                   backgroundColor: AppColors.orange,
                   onPressed: () {
-                    // Handle navigation
+                    Navigator.pushNamed(context, AppRoutes.courses);
                   },
                 ),
               ],
@@ -295,7 +296,7 @@ class LandingPage extends StatelessWidget {
             text: 'Explore coursers',
             backgroundColor: AppColors.lightBlue,
             onPressed: () {
-              // Handle navigation
+              Navigator.pushNamed(context, AppRoutes.courses);
             },
           ),
           const SizedBox(height: 40),
