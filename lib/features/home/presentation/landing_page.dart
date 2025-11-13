@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/colored_text.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/persistent_bottom_nav.dart';
 import '../../../routes/app_routes.dart';
 
 class LandingPage extends StatelessWidget {
@@ -54,6 +55,7 @@ class LandingPage extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const PersistentBottomNav(),
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/persistent_bottom_nav.dart';
 import '../data/courses_data.dart';
 import 'widgets/course_item.dart';
 
@@ -71,6 +72,7 @@ class CoursesPage extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const PersistentBottomNav(),
     );
   }
 
