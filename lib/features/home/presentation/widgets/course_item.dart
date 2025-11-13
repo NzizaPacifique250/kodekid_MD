@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../routes/app_routes.dart';
 import '../../domain/course_model.dart';
 
 class CourseItem extends StatelessWidget {
@@ -20,19 +20,22 @@ class CourseItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Course number and title
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 12),
-            child: Text(
-              '${course.id}. ${course.title}',
-              style: AppTextStyles.bodyText(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+          GestureDetector(
+            onTap: () => _navigateToLesson(context),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              child: Text(
+                '${course.id}. ${course.title}',
+                style: AppTextStyles.bodyText(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
           // Video thumbnail
           GestureDetector(
-            onTap: () => _launchVideo(course.videoUrl),
+            onTap: () => _navigateToLesson(context),
             child: Stack(
               children: [
                 // Thumbnail container with gradient
@@ -169,21 +172,12 @@ class CourseItem extends StatelessWidget {
     );
   }
 
-  Future<void> _launchVideo(String url) async {
-    final Uri videoUri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(videoUri)) {
-        await launchUrl(
-          videoUri,
-          mode: LaunchMode.externalApplication,
-        );
-      } else {
-        throw 'Could not launch $url';
-      }
-    } catch (e) {
-      // Handle error - could show a snackbar or dialog
-      debugPrint('Error launching video: $e');
-    }
+  void _navigateToLesson(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.lessonDetail,
+      arguments: {'lessonId': course.id},
+    );
   }
 }
 
