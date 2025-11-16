@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -28,7 +28,7 @@ void main() async {
   );
   runApp(
     ProviderScope(
-      child: ChangeNotifierProvider(
+      child: provider.ChangeNotifierProvider(
         create: (context) => ThemeProvider(),
         child: const MainApp(),
       ),
@@ -41,7 +41,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
+    return provider.Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
           title: 'KodeKid',
