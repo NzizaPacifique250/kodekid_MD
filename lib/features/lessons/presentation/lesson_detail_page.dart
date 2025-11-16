@@ -120,7 +120,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             const SizedBox(height: 40),
             
             // Mark as Completed
-            _buildMarkAsCompleted(),
+            _buildMarkAsCompleted(isCompleted),
             
             const SizedBox(height: 40),
             
@@ -152,11 +152,11 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
               ),
               children: [
                 TextSpan(
-                  text: '${lesson.chapterNumber}: ',
+                  text: '${lesson!.chapterNumber}: ',
                   style: const TextStyle(color: AppColors.darkGrey),
                 ),
                 // Split title and highlight PYTHON
-                ..._buildChapterTitleSpans(lesson.chapterTitle),
+                ..._buildChapterTitleSpans(lesson!.chapterTitle),
               ],
             ),
           ),
@@ -202,7 +202,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Text(
-        lesson.description,
+        lesson!.description,
         style: AppTextStyles.bodyText(),
         textAlign: TextAlign.left,
       ),
@@ -223,7 +223,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             ).copyWith(color: AppColors.orange),
           ),
           const SizedBox(height: 16),
-          ...lesson.learningObjectives.map((objective) => Padding(
+          ...lesson!.learningObjectives.map((objective) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +263,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             ).copyWith(color: AppColors.orange),
           ),
           const SizedBox(height: 16),
-          ...lesson.topicsCovered.map((topic) => Padding(
+          ...lesson!.topicsCovered.map((topic) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +326,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             ).copyWith(color: AppColors.orange),
           ),
           const SizedBox(height: 16),
-          ...lesson.activities.map((activity) => Padding(
+          ...lesson!.activities.map((activity) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +403,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     );
   }
 
-  Widget _buildMarkAsCompleted() {
+  Widget _buildMarkAsCompleted(bool isCompleted) {
     return Center(
       child: GestureDetector(
         onTap: () async {

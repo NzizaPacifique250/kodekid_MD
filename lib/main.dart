@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'features/home/presentation/landing_page.dart';
@@ -26,9 +27,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: const MainApp(),
+    ProviderScope(
+      child: ChangeNotifierProvider(
+        create: (context) => ThemeProvider(),
+        child: const MainApp(),
+      ),
     ),
   );
 }
