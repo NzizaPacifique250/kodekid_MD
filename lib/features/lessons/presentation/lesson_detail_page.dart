@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
+import '../../../core/widgets/youtube_player_widget.dart';
 import '../../../core/providers/lesson_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../home/data/courses_data.dart';
@@ -167,93 +168,33 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   Widget _buildVideoSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.darkGreen,
-                  AppColors.darkGreenLight,
-                ],
+      child: lesson!.videoUrl.isNotEmpty
+          ? YouTubePlayerWidget(videoUrl: lesson!.videoUrl)
+          : Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.darkGreen,
+                    AppColors.darkGreenLight,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              borderRadius: BorderRadius.circular(12),
+              child: const Center(
+                child: Text(
+                  'Video Coming Soon',
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-            child: Stack(
-              children: [
-                // Geekster logo (if applicable)
-                if (lesson.hasGeeksterLogo)
-                  Positioned(
-                    top: 16,
-                    left: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.limeGreen.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'G Geekster',
-                        style: AppTextStyles.bodyText(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ).copyWith(color: AppColors.darkGrey),
-                      ),
-                    ),
-                  ),
-                // Title text
-                const Positioned(
-                  left: 20,
-                  top: 60,
-                  child: Text(
-                    'Introduction to Python',
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // Python logo placeholder (top right)
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.lightBlue.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.code,
-                      color: AppColors.yellow,
-                      size: 28,
-                    ),
-                  ),
-                ),
-                // Play button (center)
-                const Positioned.fill(
-                  child: Center(
-                    child: Icon(
-                      Icons.play_circle_filled,
-                      color: AppColors.white,
-                      size: 70,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
