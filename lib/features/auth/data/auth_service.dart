@@ -64,48 +64,120 @@ class AuthService {
   // Register new user with email verification
   static Future<Map<String, dynamic>> register(String email, String password, String name) async {
     try {
+      print('=== REGISTRATION DEBUG START ===');
+      print('Email: $email');
+      print('Password length: ${password.length}');
+      print('Name: $name');
+      print('Firebase Auth instance: ${_auth.app.name}');
+      
+      // Validate inputs before attempting registration
+      if (email.isEmpty || password.isEmpty || name.isEmpty) {
+        print('ERROR: Empty fields detected');
+        return {'success': false, 'message': 'All fields are required'};
+      }
+      
+      if (password.length < 6) {
+        print('ERROR: Password too short');
+        return {'success': false, 'message': 'Password must be at least 6 characters'};
+      }
+      
+      print('Calling createUserWithEmailAndPassword...');
       final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
+        email: email.trim().toLowerCase(),
         password: password,
       );
       
+      print('✓ User created successfully: ${credential.user?.uid}');
+      print('✓ User email: ${credential.user?.email}');
+      
       if (credential.user != null) {
         // Update display name
-        await credential.user!.updateDisplayName(name);
+        print('Updating display name...');
+        await credential.user!.updateDisplayName(name.trim());
+        print('✓ Display name updated');
         
-        // Save user data to Firestore
-        await _firestore.collection('users').doc(credential.user!.uid).set({
-          'name': name,
-          'email': email,
+        // Save user data to Firestore (non-blocking)
+        print('Saving to Firestore...');
+        _firestore.collection('users').doc(credential.user!.uid).set({
+          'name': name.trim(),
+          'email': email.trim().toLowerCase(),
           'createdAt': FieldValue.serverTimestamp(),
+          'emailVerified': false,
+        }).then((_) {
+          print('✓ Firestore save successful');
+        }).catchError((error) {
+          print('⚠ Firestore save error (non-critical): $error');
         });
         
         // Send email verification
+        print('Sending email verification...');
         await credential.user!.sendEmailVerification();
+        print('✓ Email verification sent successfully');
         
+        print('=== REGISTRATION SUCCESS ===');
         return {
           'success': true,
           'message': 'Registration successful! Please check your email to verify your account.',
           'needsVerification': true,
         };
       }
-      return {'success': false, 'message': 'Registration failed'};
+      print('ERROR: No user returned from Firebase');
+      return {'success': false, 'message': 'Registration failed - no user created'};
     } on FirebaseAuthException catch (e) {
-      String message = 'Registration failed';
+      print('=== FIREBASE AUTH ERROR ===');
+      print('Error code: ${e.code}');
+      print('Error message: ${e.message}');
+      print('Stack trace: ${e.stackTrace}');
+      
+      String message;
       switch (e.code) {
         case 'weak-password':
-          message = 'The password provided is too weak.';
+          message = 'Password is too weak. Use at least 6 characters.';
           break;
         case 'email-already-in-use':
+          // Check if the existing account is unverified
+          try {
+            final signInResult = await _auth.signInWithEmailAndPassword(
+              email: email.trim().toLowerCase(),
+              password: password,
+            );
+            if (signInResult.user != null && !signInResult.user!.emailVerified) {
+              // Account exists but not verified - resend verification
+              await signInResult.user!.sendEmailVerification();
+              return {
+                'success': true,
+                'message': 'Account exists but not verified. Verification email sent again!',
+                'needsVerification': true,
+              };
+            }
+          } catch (signInError) {
+            // If sign-in fails, it means password is different
+            message = 'An account with this email already exists. Please use a different email or try logging in.';
+            break;
+          }
           message = 'An account already exists with this email.';
           break;
         case 'invalid-email':
-          message = 'Invalid email address.';
+          message = 'Please enter a valid email address.';
           break;
+        case 'operation-not-allowed':
+          message = 'Email registration is not enabled. Contact support.';
+          break;
+        case 'network-request-failed':
+          message = 'Network error. Check your internet connection.';
+          break;
+        case 'too-many-requests':
+          message = 'Too many attempts. Please try again later.';
+          break;
+        default:
+          message = e.message ?? 'Registration failed. Please try again.';
       }
       return {'success': false, 'message': message};
     } catch (e) {
-      return {'success': false, 'message': 'An error occurred. Please try again.'};
+      print('=== UNEXPECTED ERROR ===');
+      print('Error: $e');
+      print('Type: ${e.runtimeType}');
+      return {'success': false, 'message': 'Registration failed. Please try again.'};
     }
   }
 
@@ -115,10 +187,13 @@ class AuthService {
       final user = _auth.currentUser;
       if (user != null && !user.emailVerified) {
         await user.sendEmailVerification();
+        print('Email verification sent to: ${user.email}');
         return true;
       }
+      print('Cannot send verification: user is null or already verified');
       return false;
     } catch (e) {
+      print('Error sending email verification: $e');
       return false;
     }
   }
@@ -149,6 +224,40 @@ class AuthService {
       }
     }
     return null;
+  }
+
+  // Handle existing unverified account
+  static Future<Map<String, dynamic>> handleExistingAccount(String email, String password) async {
+    try {
+      // Try to sign in with the existing account
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email.trim().toLowerCase(),
+        password: password,
+      );
+      
+      if (credential.user != null) {
+        if (!credential.user!.emailVerified) {
+          // Resend verification email
+          await credential.user!.sendEmailVerification();
+          return {
+            'success': true,
+            'message': 'Verification email sent! Please check your email.',
+            'needsVerification': true,
+          };
+        } else {
+          return {
+            'success': true,
+            'message': 'Account already verified. You can log in.',
+          };
+        }
+      }
+      return {'success': false, 'message': 'Failed to access existing account'};
+    } catch (e) {
+      return {
+        'success': false, 
+        'message': 'Wrong password for existing account. Please try logging in instead.',
+      };
+    }
   }
 }
 

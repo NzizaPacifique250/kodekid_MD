@@ -44,12 +44,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'your-web-api-key',
-    appId: 'your-web-app-id',
-    messagingSenderId: 'your-sender-id',
-    projectId: 'your-project-id',
-    authDomain: 'your-project-id.firebaseapp.com',
-    storageBucket: 'your-project-id.appspot.com',
+    apiKey: 'AIzaSyBbftCgOaJNENau0DG3kv2woH3V1mett0k',
+    appId: '1:359666384524:web:bed7c3533cb9fed94105a9',
+    messagingSenderId: '359666384524',
+    projectId: 'kodekid-c59ef',
+    authDomain: 'kodekid-c59ef.firebaseapp.com',
+    storageBucket: 'kodekid-c59ef.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -70,11 +70,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'your-ios-api-key',
-    appId: 'your-ios-app-id',
-    messagingSenderId: 'your-sender-id',
-    projectId: 'your-project-id',
-    storageBucket: 'your-project-id.appspot.com',
+    apiKey: 'AIzaSyAQgjK_8jGr48FVe-Vv1lj7RDw4iFcplVg',
+    appId: '1:359666384524:ios:a32b7be0c8bdc47c4105a9',
+    messagingSenderId: '359666384524',
+    projectId: 'kodekid-c59ef',
+    storageBucket: 'kodekid-c59ef.firebasestorage.app',
     iosBundleId: 'com.example.kodekid',
   );
 }

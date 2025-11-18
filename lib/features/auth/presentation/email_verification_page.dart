@@ -193,15 +193,34 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   
                   // Resend email button
                   PrimaryButton(
-                    text: _canResendEmail 
-                        ? 'RESEND EMAIL' 
-                        : 'RESEND IN ${_resendCountdown}s',
-                    backgroundColor: _canResendEmail 
+                    text: _isLoading
+                        ? 'SENDING...'
+                        : _canResendEmail 
+                            ? 'RESEND EMAIL' 
+                            : 'RESEND IN ${_resendCountdown}s',
+                    backgroundColor: _canResendEmail && !_isLoading
                         ? AppColors.orange 
                         : AppColors.lightGrey,
                     onPressed: _canResendEmail && !_isLoading 
                         ? _resendVerificationEmail 
                         : null,
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Manual check button
+                  TextButton(
+                    onPressed: _checkVerificationManually,
+                    child: Text(
+                      'I\'ve verified my email - Check now',
+                      style: AppTextStyles.bodyText(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ).copyWith(
+                        color: AppColors.orange,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                   
                   const SizedBox(height: 24),
@@ -269,5 +288,55 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
         ],
       ),
     );
+  }
+  
+  Future<void> _checkVerificationManually() async {
+    try {
+      await AuthService.reloadUser();
+      if (AuthService.isEmailVerified) {
+        _timer?.cancel();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Email verified successfully! Welcome to KodeKid!',
+                style: AppTextStyles.bodyText(),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.dashboard,
+            (route) => false,
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Email not yet verified. Please check your email and click the verification link.',
+                style: AppTextStyles.bodyText(),
+              ),
+              backgroundColor: AppColors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error checking verification status. Please try again.',
+              style: AppTextStyles.bodyText(),
+            ),
+            backgroundColor: AppColors.orange,
+          ),
+        );
+      }
+    }
   }
 }

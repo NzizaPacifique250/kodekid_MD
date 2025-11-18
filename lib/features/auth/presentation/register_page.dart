@@ -5,6 +5,8 @@ import '../../../core/widgets/kodekid_logo.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../routes/app_routes.dart';
 import '../data/auth_service.dart';
+import '../../../core/services/firebase_test.dart';
+import '../../../test_signup.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -22,6 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _showDebugInfo = false;
 
   @override
   void dispose() {
@@ -34,47 +37,202 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
+      // Trim whitespace from inputs
+      final email = _emailController.text.trim().toLowerCase();
+      final password = _passwordController.text;
+      final name = _nameController.text.trim();
+      
+      // Additional validation
+      if (name.length < 2) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Name must be at least 2 characters long.',
+              style: AppTextStyles.bodyText(),
+            ),
+            backgroundColor: AppColors.orange,
+          ),
+        );
+        return;
+      }
+      
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Please enter a valid email address.',
+              style: AppTextStyles.bodyText(),
+            ),
+            backgroundColor: AppColors.orange,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
 
-      final result = await AuthService.register(
-        _emailController.text.trim(),
-        _passwordController.text,
-        _nameController.text.trim(),
-      );
+      try {
+        final result = await AuthService.register(email, password, name);
 
-      setState(() {
-        _isLoading = false;
-      });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
 
-      if (mounted) {
-        if (result['success']) {
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result['message'] ?? 'Registration successful!',
-                style: AppTextStyles.bodyText(),
+          if (result['success']) {
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  result['message'] ?? 'Account created! Check your email for verification.',
+                  style: AppTextStyles.bodyText(),
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
               ),
-              backgroundColor: Colors.green,
-            ),
-          );
+            );
+            
+            // Navigate to email verification page if needed
+            if (result['needsVerification'] == true) {
+              Navigator.pushReplacementNamed(context, AppRoutes.emailVerification);
+            }
+          } else {
+            // Check if it's an existing account error
+            if (result['message']?.contains('already exists') == true) {
+              _showExistingAccountDialog(email, password);
+            } else {
+              // Show specific error message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    result['message'] ?? 'Registration failed. Please try again.',
+                    style: AppTextStyles.bodyText(),
+                  ),
+                  backgroundColor: AppColors.orange,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
           
-          // Navigate to email verification page
-          Navigator.pushNamed(context, AppRoutes.emailVerification);
-        } else {
-          // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                result['message'] ?? 'Registration failed. Please try again.',
+                'Network error. Please check your connection and try again.',
                 style: AppTextStyles.bodyText(),
               ),
               backgroundColor: AppColors.orange,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
+      }
+    }
+  }
+  
+  Future<void> _testFirebase() async {
+    final result = await FirebaseTest.testFirebaseConnection();
+    final authResult = await FirebaseTest.testEmailPasswordAuth();
+    
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Firebase Test Results'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Connection: ${result['success'] ? 'SUCCESS' : 'FAILED'}'),
+              Text('Message: ${result['message']}'),
+              const SizedBox(height: 8),
+              Text('Auth Test: ${authResult['success'] ? 'SUCCESS' : 'FAILED'}'),
+              Text('Auth Message: ${authResult['message']}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+  
+  Future<void> _testSignup() async {
+    await SignupTest.testSignup();
+  }
+
+  void _showExistingAccountDialog(String email, String password) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Account Already Exists',
+          style: AppTextStyles.sectionHeadline(fontSize: 18),
+        ),
+        content: Text(
+          'An account with this email already exists. Would you like to resend the verification email?',
+          style: AppTextStyles.bodyText(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.bodyText().copyWith(color: AppColors.darkGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _handleExistingAccount(email, password);
+            },
+            child: Text(
+              'Resend Email',
+              style: AppTextStyles.bodyText().copyWith(color: AppColors.orange),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleExistingAccount(String email, String password) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await AuthService.handleExistingAccount(email, password);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['message'] ?? 'Operation completed.',
+            style: AppTextStyles.bodyText(),
+          ),
+          backgroundColor: result['success'] ? Colors.green : AppColors.orange,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      if (result['success'] && result['needsVerification'] == true) {
+        Navigator.pushReplacementNamed(context, AppRoutes.emailVerification);
       }
     }
   }
@@ -135,6 +293,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your name';
                         }
+                        if (value.trim().length < 2) {
+                          return 'Name must be at least 2 characters';
+                        }
+                        if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value.trim())) {
+                          return 'Name can only contain letters and spaces';
+                        }
                         return null;
                       },
                     ),
@@ -152,8 +316,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                          return 'Please enter a valid email address';
                         }
                         return null;
                       },
@@ -187,6 +351,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         }
                         if (value.length < 6) {
                           return 'Password must be at least 6 characters';
+                        }
+                        if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*\d)').hasMatch(value)) {
+                          return 'Password must contain at least one letter and one number';
                         }
                         return null;
                       },
@@ -229,9 +396,46 @@ class _RegisterPageState extends State<RegisterPage> {
                     
                     // Register Button
                     PrimaryButton(
-                      text: 'SIGN UP',
+                      text: _isLoading ? 'SIGNING UP...' : 'SIGN UP',
                       backgroundColor: AppColors.orange,
                       onPressed: _isLoading ? null : _handleRegister,
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Debug button (only show in debug mode)
+                    if (_showDebugInfo) ...[
+                      TextButton(
+                        onPressed: _testFirebase,
+                        child: Text(
+                          'Test Firebase Connection',
+                          style: AppTextStyles.bodyText(
+                            fontSize: 12,
+                          ).copyWith(color: AppColors.darkGrey),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _testSignup,
+                        child: Text(
+                          'Test Signup Process',
+                          style: AppTextStyles.bodyText(
+                            fontSize: 12,
+                          ).copyWith(color: AppColors.orange),
+                        ),
+                      ),
+                    ],
+                    
+                    // Toggle debug info
+                    GestureDetector(
+                      onLongPress: () {
+                        setState(() {
+                          _showDebugInfo = !_showDebugInfo;
+                        });
+                      },
+                      child: Container(
+                        height: 20,
+                        color: Colors.transparent,
+                      ),
                     ),
                     
                     const SizedBox(height: 24),

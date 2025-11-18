@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../features/home/presentation/landing_page.dart';
+import '../../features/auth/presentation/login_page.dart';
 import '../../features/dashboard/presentation/dashboard_page.dart';
 import '../../features/auth/presentation/email_verification_page.dart';
 
@@ -29,7 +29,7 @@ class AuthWrapper extends StatelessWidget {
           }
         }
         
-        return const LandingPage();
+        return const LoginPage();
       },
     );
   }
