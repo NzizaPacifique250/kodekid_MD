@@ -47,14 +47,15 @@ class MainApp extends StatelessWidget {
           theme: themeProvider.lightTheme,
           darkTheme: themeProvider.darkTheme,
           themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      builder: (context, child) {
-        if (child == null) return const SizedBox.shrink();
-        return AppWrapper(child: child);
-      },
-      home: const AuthWrapper(),
-      routes: {
-        AppRoutes.landing: (context) => const LandingPage(),
-        AppRoutes.courses: (context) => const CoursesPage(),
+          builder: (context, child) {
+            if (child == null) return const SizedBox.shrink();
+            return AppWrapper(child: child);
+          },
+          initialRoute: AppRoutes.landing,
+          routes: {
+            AppRoutes.landing: (context) => const AuthWrapper(),
+            '/home': (context) => const LandingPage(),
+            AppRoutes.courses: (context) => const CoursesPage(),
         AppRoutes.dashboard: (context) => const DashboardPage(),
         AppRoutes.profile: (context) => const ProfilePage(),
         AppRoutes.editProfile: (context) => const EditProfilePage(),

@@ -53,19 +53,19 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'your-android-api-key',
-    appId: 'your-android-app-id',
-    messagingSenderId: 'your-sender-id',
-    projectId: 'your-project-id',
-    storageBucket: 'your-project-id.appspot.com',
+    apiKey: 'AIzaSyBbftCgOaJNENau0DG3kv2woH3V1mett0k',
+    appId: '1:359666384524:android:bed7c3533cb9fed94105a9',
+    messagingSenderId: '359666384524',
+    projectId: 'kodekid-c59ef',
+    storageBucket: 'kodekid-c59ef.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'your-ios-api-key',
-    appId: 'your-ios-app-id',
-    messagingSenderId: 'your-sender-id',
-    projectId: 'your-project-id',
-    storageBucket: 'your-project-id.appspot.com',
+    apiKey: 'AIzaSyAQgjK_8jGr48FVe-Vv1lj7RDw4iFcplVg',
+    appId: '1:359666384524:ios:a32b7be0c8bdc47c4105a9',
+    messagingSenderId: '359666384524',
+    projectId: 'kodekid-c59ef',
+    storageBucket: 'kodekid-c59ef.firebasestorage.app',
     iosBundleId: 'com.example.kodekid',
   );
 
