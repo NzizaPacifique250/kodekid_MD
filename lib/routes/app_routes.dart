@@ -9,6 +9,7 @@ class AppRoutes {
   static const String helpSupport = '/help-support';
   static const String login = '/login';
   static const String register = '/register';
+  static const String emailVerification = '/email-verification';
   static const String logout = '/logout';
 }
 

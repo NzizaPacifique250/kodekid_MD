@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
 
-      final success = await AuthService.login(
+      final result = await AuthService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -42,24 +42,29 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = false;
       });
 
-      if (success && mounted) {
-        // Navigate to dashboard after successful login
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.dashboard,
-          (route) => false,
-        );
-      } else if (mounted) {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Login failed. Please check your credentials.',
-              style: AppTextStyles.bodyText(),
+      if (mounted) {
+        if (result['success']) {
+          // Navigate to dashboard after successful login
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.dashboard,
+            (route) => false,
+          );
+        } else if (result['needsVerification'] == true) {
+          // Navigate to email verification page
+          Navigator.pushNamed(context, AppRoutes.emailVerification);
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result['message'] ?? 'Login failed. Please check your credentials.',
+                style: AppTextStyles.bodyText(),
+              ),
+              backgroundColor: AppColors.orange,
             ),
-            backgroundColor: AppColors.orange,
-          ),
-        );
+          );
+        }
       }
     }
   }

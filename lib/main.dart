@@ -12,9 +12,11 @@ import 'features/profile/presentation/settings_page.dart';
 import 'features/profile/presentation/help_support_page.dart';
 import 'features/auth/presentation/login_page.dart';
 import 'features/auth/presentation/register_page.dart';
+import 'features/auth/presentation/email_verification_page.dart';
 import 'features/auth/presentation/logout_page.dart';
 import 'core/navigation/navigation_service.dart';
 import 'core/widgets/app_wrapper.dart';
+import 'core/widgets/auth_wrapper.dart';
 import 'core/providers/theme_provider.dart';
 import 'routes/app_routes.dart';
 
@@ -49,7 +51,7 @@ class MainApp extends StatelessWidget {
         if (child == null) return const SizedBox.shrink();
         return AppWrapper(child: child);
       },
-      initialRoute: AppRoutes.landing,
+      home: const AuthWrapper(),
       routes: {
         AppRoutes.landing: (context) => const LandingPage(),
         AppRoutes.courses: (context) => const CoursesPage(),
@@ -60,6 +62,7 @@ class MainApp extends StatelessWidget {
         AppRoutes.helpSupport: (context) => const HelpSupportPage(),
         AppRoutes.login: (context) => const LoginPage(),
         AppRoutes.register: (context) => const RegisterPage(),
+        AppRoutes.emailVerification: (context) => const EmailVerificationPage(),
         AppRoutes.logout: (context) => const LogoutPage(),
         AppRoutes.lessonDetail: (context) {
           final args = ModalRoute.of(context)?.settings.arguments;

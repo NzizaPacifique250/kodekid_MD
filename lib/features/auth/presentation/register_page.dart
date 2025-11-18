@@ -38,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _isLoading = true;
       });
 
-      final success = await AuthService.register(
+      final result = await AuthService.register(
         _emailController.text.trim(),
         _passwordController.text,
         _nameController.text.trim(),
@@ -48,24 +48,33 @@ class _RegisterPageState extends State<RegisterPage> {
         _isLoading = false;
       });
 
-      if (success && mounted) {
-        // Navigate to dashboard after successful registration
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.dashboard,
-          (route) => false,
-        );
-      } else if (mounted) {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Registration failed. Please try again.',
-              style: AppTextStyles.bodyText(),
+      if (mounted) {
+        if (result['success']) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result['message'] ?? 'Registration successful!',
+                style: AppTextStyles.bodyText(),
+              ),
+              backgroundColor: Colors.green,
             ),
-            backgroundColor: AppColors.orange,
-          ),
-        );
+          );
+          
+          // Navigate to email verification page
+          Navigator.pushNamed(context, AppRoutes.emailVerification);
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result['message'] ?? 'Registration failed. Please try again.',
+                style: AppTextStyles.bodyText(),
+              ),
+              backgroundColor: AppColors.orange,
+            ),
+          );
+        }
       }
     }
   }
