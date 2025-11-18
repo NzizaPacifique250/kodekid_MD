@@ -14,6 +14,9 @@ class AuthService {
   // Get current user email
   static String? get currentUserEmail => _auth.currentUser?.email;
 
+  // Get current user name (synchronous)
+  static String get currentUserName => _auth.currentUser?.displayName ?? _auth.currentUser?.email?.split('@').first ?? 'User';
+
   // Check if email is verified
   static bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
 
