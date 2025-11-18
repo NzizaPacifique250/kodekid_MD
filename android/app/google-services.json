@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "359666384524",
+    "project_id": "kodekid-c59ef",
+    "storage_bucket": "kodekid-c59ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359666384524:android:bed7c3533cb9fed94105a9",
+        "android_client_info": {
+          "package_name": "com.example.kodekid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbftCgOaJNENau0DG3kv2woH3V1mett0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

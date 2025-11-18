@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'features/home/presentation/landing_page.dart';
 import 'features/home/presentation/courses_page.dart';
 import 'features/lessons/presentation/lesson_detail_page.dart';
@@ -16,7 +18,11 @@ import 'core/widgets/app_wrapper.dart';
 import 'core/providers/theme_provider.dart';
 import 'routes/app_routes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
