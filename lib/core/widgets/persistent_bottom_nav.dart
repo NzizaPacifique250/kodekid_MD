@@ -36,7 +36,7 @@ class _PersistentBottomNavState extends State<PersistentBottomNav> {
       _currentIndex = index;
       NavigationService.currentBottomNavIndex = index;
     });
-    
+
     // Use the global navigator key to navigate
     // This ensures we always have access to the Navigator
     final navigator = NavigationService.navigatorKey.currentState;
@@ -50,7 +50,7 @@ class _PersistentBottomNavState extends State<PersistentBottomNav> {
       });
       return;
     }
-    
+
     _navigateToRoute(index, navigator);
   }
 
@@ -58,7 +58,7 @@ class _PersistentBottomNavState extends State<PersistentBottomNav> {
     String targetRoute;
     switch (index) {
       case 0:
-        targetRoute = AppRoutes.landing;
+        targetRoute = AppRoutes.home;
         break;
       case 1:
         targetRoute = AppRoutes.courses;
@@ -72,12 +72,12 @@ class _PersistentBottomNavState extends State<PersistentBottomNav> {
       default:
         return;
     }
-    
+
     navigator.pushNamedAndRemoveUntil(
       targetRoute,
       (route) {
         final name = route.settings.name;
-        return name == AppRoutes.landing ||
+        return name == AppRoutes.home ||
             name == AppRoutes.courses ||
             name == AppRoutes.dashboard ||
             name == AppRoutes.profile;
@@ -88,20 +88,20 @@ class _PersistentBottomNavState extends State<PersistentBottomNav> {
   void _updateIndexFromRoute() {
     // Only try to update if we have a valid context
     if (!mounted) return;
-    
+
     // Use maybeOf to safely check if Navigator is available
     // This won't throw an exception if Navigator isn't available
     final navigator = Navigator.maybeOf(context);
     if (navigator == null) return;
-    
+
     try {
       // Try to get the route - this requires Navigator context
       final route = ModalRoute.of(context);
       if (route == null) return;
-      
+
       final routeName = route.settings.name;
       if (routeName == null) return;
-      
+
       final routeIndex = NavigationService.getCurrentIndexFromRoute(routeName);
       if (routeIndex != _currentIndex && mounted) {
         setState(() {
@@ -266,4 +266,3 @@ class _PersistentBottomNavState extends State<PersistentBottomNav> {
     );
   }
 }
-

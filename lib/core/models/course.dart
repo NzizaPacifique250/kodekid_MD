@@ -80,13 +80,17 @@ class Course {
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      exercises: (map['exercises'] as List<dynamic>?)
-              ?.map((e) => Map<String, dynamic>.from(e as Map))
-              .toList() ??
+      exercises: (map['exercises'] as List<dynamic>?)?.map((e) {
+            if (e is Map) return Map<String, dynamic>.from(e);
+            if (e is String) return <String, dynamic>{'text': e};
+            return <String, dynamic>{'value': e?.toString() ?? ''};
+          }).toList() ??
           [],
-      activities: (map['activities'] as List<dynamic>?)
-              ?.map((e) => Map<String, dynamic>.from(e as Map))
-              .toList() ??
+      activities: (map['activities'] as List<dynamic>?)?.map((e) {
+            if (e is Map) return Map<String, dynamic>.from(e);
+            if (e is String) return <String, dynamic>{'text': e};
+            return <String, dynamic>{'value': e?.toString() ?? ''};
+          }).toList() ??
           [],
       chapter: (map['chapter'] is int)
           ? map['chapter'] as int

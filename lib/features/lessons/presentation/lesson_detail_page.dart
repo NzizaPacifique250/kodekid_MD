@@ -6,14 +6,18 @@ import '../../../routes/app_routes.dart';
 import '../../home/data/courses_data.dart';
 import '../domain/lesson_model.dart';
 import '../data/lessons_data.dart';
+import '../../../core/services/course_service.dart';
+import '../../../core/models/course.dart' as core;
 import 'widgets/code_editor_widget.dart';
 
 class LessonDetailPage extends StatefulWidget {
-  final int lessonId;
+  final int? lessonId;
+  final String? courseId;
 
   const LessonDetailPage({
     super.key,
-    required this.lessonId,
+    this.lessonId,
+    this.courseId,
   });
 
   @override
@@ -24,15 +28,76 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
   late LessonModel lesson;
   bool isCompleted = false;
   String currentCode = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    lesson = LessonsData.getLessonById(widget.lessonId);
+    _loadLesson();
+  }
+
+  Future<void> _loadLesson() async {
+    // If a Firestore courseId was provided, fetch that course and map it
+    // to the LessonModel used by this page. Otherwise, fall back to
+    // the local LessonsData by numeric lessonId.
+    if (widget.courseId != null) {
+      try {
+        final course = await CourseService.getCourse(widget.courseId!);
+        if (course != null) {
+          lesson = _mapCourseToLesson(course);
+        } else {
+          // If not found, fall back to a default lesson or show empty
+          lesson = LessonsData.getLessonById(widget.lessonId ?? 1);
+        }
+      } catch (_) {
+        lesson = LessonsData.getLessonById(widget.lessonId ?? 1);
+      }
+    } else {
+      lesson = LessonsData.getLessonById(widget.lessonId ?? 1);
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  LessonModel _mapCourseToLesson(core.Course course) {
+    // Map the core Course model to the LessonModel structure used by the UI.
+    final activities = course.activities
+        .map((e) => (e['text'] ?? e['value'] ?? e.toString()).toString())
+        .toList();
+    return LessonModel(
+      id: course.chapter,
+      chapterTitle: course.title,
+      chapterNumber: course.chapter.toString(),
+      videoUrl: course.videoLink ?? '',
+      hasGeeksterLogo: false,
+      description: course.description,
+      learningObjectives: course.goals,
+      topicsCovered: course.topics,
+      activities: activities,
+      expectedOutput: '',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppColors.darkGrey),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -48,42 +113,42 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
           children: [
             // Header with Logo and Chapter Title
             _buildHeader(),
-            
+
             // Video Section
             _buildVideoSection(),
-            
+
             const SizedBox(height: 24),
-            
+
             // Lesson Description
             _buildDescription(),
-            
+
             const SizedBox(height: 32),
-            
+
             // What you'll Learn Section
             _buildLearningObjectives(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Topics Covered Section
             _buildTopicsCovered(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Time to Practice Section
             _buildPracticeSection(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Activities Section
             _buildActivities(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Instructions Section
             _buildInstructions(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Code Editor
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -95,17 +160,17 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
                 },
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Mark as Completed
             _buildMarkAsCompleted(),
-            
+
             const SizedBox(height: 40),
-            
+
             // Previous/Next Navigation
             _buildNavigationButtons(),
-            
+
             const SizedBox(height: 40),
           ],
         ),
@@ -467,9 +532,7 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
             children: [
               Icon(
                 isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                color: isCompleted
-                    ? AppColors.white
-                    : AppColors.darkGreen,
+                color: isCompleted ? AppColors.white : AppColors.darkGreen,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -479,9 +542,7 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ).copyWith(
-                  color: isCompleted
-                      ? AppColors.white
-                      : AppColors.darkGreen,
+                  color: isCompleted ? AppColors.white : AppColors.darkGreen,
                 ),
               ),
             ],
@@ -495,7 +556,7 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
     List<TextSpan> spans = [];
     String upperTitle = title.toUpperCase();
     int pythonIndex = upperTitle.indexOf('PYTHON');
-    
+
     if (pythonIndex != -1) {
       // Text before PYTHON
       if (pythonIndex > 0) {
@@ -523,13 +584,14 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
         style: const TextStyle(color: AppColors.darkGrey),
       ));
     }
-    
+
     return spans;
   }
 
   Widget _buildNavigationButtons() {
     final courses = CoursesData.getCourses();
-    final currentIndex = courses.indexWhere((course) => course.id == widget.lessonId);
+    final currentIndex =
+        courses.indexWhere((course) => course.id == widget.lessonId);
     final hasPrevious = currentIndex > 0;
     final hasNext = currentIndex < courses.length - 1 && currentIndex >= 0;
 
@@ -567,9 +629,9 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
             )
           else
             const Expanded(child: SizedBox()),
-          
+
           if (hasPrevious && hasNext) const SizedBox(width: 16),
-          
+
           // Next Button
           if (hasNext)
             Expanded(
@@ -608,4 +670,3 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
     );
   }
 }
-

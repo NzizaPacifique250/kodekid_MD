@@ -14,7 +14,9 @@ class CourseService {
 
   /// Returns all courses in the `courses` collection.
   static Future<List<Course>> getCourses() async {
-    final snap = await _col.get();
+    // Order by `order` then `chapter` in ascending order for consistent
+    // ordering across reads.
+    final snap = await _col.orderBy('chapter').get();
     return snap.docs
         .map((d) => Course.fromMap(d.data() as Map<String, dynamic>, id: d.id))
         .toList();
@@ -58,5 +60,19 @@ class CourseService {
     await _col.doc(courseId).update({
       'topics': FieldValue.arrayUnion([topic])
     });
+  }
+
+  /// Set a course document with a specific id (useful when you created a doc in console and want to overwrite from app).
+  static Future<void> setCourseWithId(String id, Course course) async {
+    await _col.doc(id).set(course.toMap());
+  }
+
+  /// Stream all courses in real-time as a list of [Course].
+  static Stream<List<Course>> streamCourses() {
+    // Apply the same ordering to the stream so the list remains consistent
+    // when documents change.
+    return _col.orderBy('chapter').snapshots().map((snap) => snap.docs
+        .map((d) => Course.fromMap(d.data() as Map<String, dynamic>, id: d.id))
+        .toList());
   }
 }
