@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
+import '../../../../../core/providers/lesson_provider.dart';
 import '../../data/python_execution_service.dart';
 
-class CodeEditorWidget extends StatefulWidget {
+class CodeEditorWidget extends ConsumerStatefulWidget {
+  final int? lessonId;
   final Function(String)? onCodeChanged;
   final String? initialCode;
   final String? output;
 
   const CodeEditorWidget({
     super.key,
+    this.lessonId,
     this.onCodeChanged,
     this.initialCode,
     this.output,
   });
 
   @override
-  State<CodeEditorWidget> createState() => _CodeEditorWidgetState();
+  ConsumerState<CodeEditorWidget> createState() => _CodeEditorWidgetState();
 }
 
-class _CodeEditorWidgetState extends State<CodeEditorWidget> {
+class _CodeEditorWidgetState extends ConsumerState<CodeEditorWidget> {
   late TextEditingController _codeController;
   String _output = '';
   bool _isExecuting = false;
@@ -29,6 +33,25 @@ class _CodeEditorWidgetState extends State<CodeEditorWidget> {
     super.initState();
     _codeController = TextEditingController(text: widget.initialCode ?? '');
     _output = widget.output ?? '';
+    
+    // Load saved code if lessonId is provided
+    if (widget.lessonId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadSavedCode();
+      });
+    }
+  }
+
+  void _loadSavedCode() {
+    if (widget.lessonId == null) return;
+    
+    final codeAsync = ref.read(userCodeProvider(widget.lessonId!));
+    codeAsync.whenData((code) {
+      if (code.isNotEmpty && _codeController.text.isEmpty) {
+        _codeController.text = code;
+        widget.onCodeChanged?.call(code);
+      }
+    });
   }
 
   @override
@@ -108,6 +131,14 @@ class _CodeEditorWidgetState extends State<CodeEditorWidget> {
             ),
             onChanged: (value) {
               widget.onCodeChanged?.call(value);
+              // Auto-save code after 2 seconds of inactivity
+              if (widget.lessonId != null) {
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (_codeController.text == value) {
+                    ref.read(userCodeProvider(widget.lessonId!).notifier).saveCode(value);
+                  }
+                });
+              }
             },
           ),
         ),

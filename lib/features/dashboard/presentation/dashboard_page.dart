@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
 import '../../../core/widgets/persistent_bottom_nav.dart';
+import '../../../core/providers/dashboard_provider.dart';
 import '../../../routes/app_routes.dart';
-import '../data/dashboard_data.dart';
+import '../../auth/data/auth_service.dart';
 import '../domain/chapter_progress_model.dart';
 import 'widgets/chapter_progress_widget.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userName = DashboardData.getCurrentUserName();
-    final chapters = DashboardData.getChapterProgress();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userName = AuthService.currentUserName;
+    final chaptersAsync = ref.watch(userProgressProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -40,7 +42,11 @@ class DashboardPage extends StatelessWidget {
                 const SizedBox(height: 32),
                 
                 // Course Progress Section
-                _buildCourseProgressSection(chapters, context),
+                chaptersAsync.when(
+                  data: (chapters) => _buildCourseProgressSection(chapters, context),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => _buildCourseProgressSection([], context),
+                ),
                 
                 const SizedBox(height: 40),
                 

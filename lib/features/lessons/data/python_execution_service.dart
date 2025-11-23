@@ -14,7 +14,7 @@ class PythonExecutionService {
   //
   // Option 3: Leave as null to use local simulation (limited functionality)
   // ============================================================================
-  static const String? _apiUrl = null; // Set your API URL here
+  static const String? _apiUrl = 'https://api.programiz.com/compiler-api/v1/compile'; // Using Programiz API
 
   // API configuration - adjust these based on your backend's expected format
   static const Map<String, String> _defaultHeaders = {
@@ -58,21 +58,21 @@ class PythonExecutionService {
   /// Adjust this method to match your backend's API specification
   static Map<String, dynamic> _buildRequestBody(String code) {
     return {
+      'language': 'python',
+      'version': 'latest',
       'code': code,
-      'language': 'py',
-      // Add other parameters your API might need:
-      // 'timeout': 5,
-      // 'version': '3.9',
+      'input': '',
     };
   }
 
   /// Parses the API response based on your backend's response format
   /// Adjust this method to match your backend's response structure
   static PythonExecutionResult _parseApiResponse(Map<String, dynamic> data) {
+    final success = data['success'] ?? false;
     return PythonExecutionResult(
-      success: data['success'] ?? true,
-      output: data['output'] ?? data['result'] ?? data['stdout'] ?? '',
-      error: data['error'] ?? data['stderr'] ?? '',
+      success: success,
+      output: data['output'] ?? '',
+      error: success ? '' : (data['error'] ?? 'Execution failed'),
     );
   }
 

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
+import '../../../core/providers/lesson_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../home/data/courses_data.dart';
 import '../domain/lesson_model.dart';
 import '../data/lessons_data.dart';
 import 'widgets/code_editor_widget.dart';
 
-class LessonDetailPage extends StatefulWidget {
+class LessonDetailPage extends ConsumerStatefulWidget {
   final int lessonId;
 
   const LessonDetailPage({
@@ -17,22 +19,39 @@ class LessonDetailPage extends StatefulWidget {
   });
 
   @override
-  State<LessonDetailPage> createState() => _LessonDetailPageState();
+  ConsumerState<LessonDetailPage> createState() => _LessonDetailPageState();
 }
 
-class _LessonDetailPageState extends State<LessonDetailPage> {
-  late LessonModel lesson;
-  bool isCompleted = false;
+class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
+  LessonModel? lesson;
   String currentCode = '';
 
   @override
   void initState() {
     super.initState();
-    lesson = LessonsData.getLessonById(widget.lessonId);
+    _loadLesson();
+  }
+
+  Future<void> _loadLesson() async {
+    final loadedLesson = await LessonsData.getLessonById(widget.lessonId);
+    if (mounted) {
+      setState(() {
+        lesson = loadedLesson ?? LessonsData.getSampleLesson();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (lesson == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final progressAsync = ref.watch(lessonProgressProvider(widget.lessonId));
+    final isCompleted = progressAsync.value?['completed'] ?? false;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -88,6 +107,7 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: CodeEditorWidget(
+                lessonId: widget.lessonId,
                 onCodeChanged: (code) {
                   setState(() {
                     currentCode = code;
@@ -445,10 +465,9 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
   Widget _buildMarkAsCompleted() {
     return Center(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            isCompleted = !isCompleted;
-          });
+        onTap: () async {
+          await ref.read(lessonProgressProvider(widget.lessonId).notifier)
+              .updateProgress(completed: !isCompleted, code: currentCode);
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
