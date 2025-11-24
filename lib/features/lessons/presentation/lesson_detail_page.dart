@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
@@ -8,9 +9,12 @@ import '../domain/lesson_model.dart';
 import '../data/lessons_data.dart';
 import '../../../core/services/course_service.dart';
 import '../../../core/models/course.dart' as core;
+import '../../../core/services/user_progress_service.dart';
+import '../../../core/providers/user_progress_provider.dart';
+import '../../../core/services/firebase_service.dart';
 import 'widgets/code_editor_widget.dart';
 
-class LessonDetailPage extends StatefulWidget {
+class LessonDetailPage extends ConsumerStatefulWidget {
   final int? lessonId;
   final String? courseId;
 
@@ -21,12 +25,12 @@ class LessonDetailPage extends StatefulWidget {
   });
 
   @override
-  State<LessonDetailPage> createState() => _LessonDetailPageState();
+  ConsumerState<LessonDetailPage> createState() => _LessonDetailPageState();
 }
 
-class _LessonDetailPageState extends State<LessonDetailPage> {
+class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   late LessonModel lesson;
-  bool isCompleted = false;
+  // completion state is derived from `completedCoursesProvider` so no local flag
   String currentCode = '';
   bool _isLoading = true;
 
@@ -61,6 +65,7 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
         _isLoading = false;
       });
     }
+    // completion state is handled reactively by Riverpod provider
   }
 
   LessonModel _mapCourseToLesson(core.Course course) {
@@ -164,7 +169,7 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
             const SizedBox(height: 40),
 
             // Mark as Completed
-            _buildMarkAsCompleted(),
+            _buildMarkAsCompleted(ref),
 
             const SizedBox(height: 40),
 
@@ -507,46 +512,67 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
     );
   }
 
-  Widget _buildMarkAsCompleted() {
+  Widget _buildMarkAsCompleted(WidgetRef ref) {
+    if (widget.courseId == null) return const SizedBox.shrink();
+
+    final completedAsync = ref.watch(completedCoursesProvider);
+
     return Center(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            isCompleted = !isCompleted;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? AppColors.darkGreen
-                : AppColors.darkGreen.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.darkGreen,
-              width: 2,
+      child: completedAsync.when(
+        data: (completed) {
+          final isCompleted = completed.contains(widget.courseId);
+          return ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isCompleted ? AppColors.darkGreen : AppColors.white,
+              foregroundColor:
+                  isCompleted ? AppColors.white : AppColors.darkGreen,
+              side: const BorderSide(color: AppColors.darkGreen, width: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                color: isCompleted ? AppColors.white : AppColors.darkGreen,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Mark as completed ${isCompleted ? '✓' : ''}',
-                style: AppTextStyles.bodyText(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ).copyWith(
-                  color: isCompleted ? AppColors.white : AppColors.darkGreen,
-                ),
-              ),
-            ],
-          ),
+            onPressed: () async {
+              final uid = FirebaseService.auth.currentUser?.uid;
+              if (uid == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Sign in to track progress')),
+                );
+                return;
+              }
+
+              try {
+                if (isCompleted) {
+                  await UserProgressService.unmarkCourseCompleted(
+                      uid, widget.courseId!);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Marked as not completed')),
+                  );
+                } else {
+                  await UserProgressService.markCourseCompleted(
+                      uid, widget.courseId!);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Marked as completed')),
+                  );
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error updating progress: $e')),
+                );
+              }
+            },
+            icon: Icon(isCompleted ? Icons.check_circle : Icons.check),
+            label: Text(isCompleted ? 'Completed' : 'Mark as completed'),
+          );
+        },
+        loading: () => ElevatedButton(
+          onPressed: null,
+          child: const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+        error: (_, __) => ElevatedButton(
+          onPressed: null,
+          child: const Text('Error'),
         ),
       ),
     );
