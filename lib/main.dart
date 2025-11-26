@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -26,36 +27,38 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: const MainApp(),
+    ProviderScope(
+      child: ChangeNotifierProvider(
+        create: (_) => ThemeProvider(),
+        child: const MainApp(),
+      ),
     ),
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return MaterialApp(
-          title: 'KodeKid',
-          debugShowCheckedModeBanner: false,
-          navigatorKey: NavigationService.navigatorKey,
-          theme: themeProvider.lightTheme,
-          darkTheme: themeProvider.darkTheme,
-          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          builder: (context, child) {
-            if (child == null) return const SizedBox.shrink();
-            return AppWrapper(child: child);
-          },
-          initialRoute: AppRoutes.landing,
-          routes: {
-            AppRoutes.landing: (context) => const AuthWrapper(),
-            '/home': (context) => const LandingPage(),
-            AppRoutes.courses: (context) => const CoursesPage(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return MaterialApp(
+      title: 'KodeKid',
+      debugShowCheckedModeBanner: false,
+      navigatorKey: NavigationService.navigatorKey,
+      theme: themeProvider.lightTheme,
+      darkTheme: themeProvider.darkTheme,
+      themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        return AppWrapper(child: child);
+      },
+      initialRoute: AppRoutes.landing,
+      routes: {
+        AppRoutes.landing: (context) => const AuthWrapper(),
+        AppRoutes.home: (context) => const LandingPage(),
+        AppRoutes.courses: (context) => const CoursesPage(),
         AppRoutes.dashboard: (context) => const DashboardPage(),
         AppRoutes.profile: (context) => const ProfilePage(),
         AppRoutes.editProfile: (context) => const EditProfilePage(),
@@ -67,14 +70,17 @@ class MainApp extends StatelessWidget {
         AppRoutes.logout: (context) => const LogoutPage(),
         AppRoutes.lessonDetail: (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
-          if (args is Map<String, dynamic> && args.containsKey('lessonId')) {
-            return LessonDetailPage(lessonId: args['lessonId'] as int);
+          if (args is Map<String, dynamic>) {
+            if (args.containsKey('courseId')) {
+              return LessonDetailPage(courseId: args['courseId'] as String);
+            }
+            if (args.containsKey('lessonId')) {
+              return LessonDetailPage(lessonId: args['lessonId'] as int);
+            }
           }
           // Default to lesson 1 if no arguments provided
           return const LessonDetailPage(lessonId: 1);
         },
-      },
-        );
       },
     );
   }

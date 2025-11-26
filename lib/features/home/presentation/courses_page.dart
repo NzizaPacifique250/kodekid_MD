@@ -1,42 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/course_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/persistent_bottom_nav.dart';
-import '../data/courses_data.dart';
+import '../domain/course_model.dart';
 import 'widgets/course_item.dart';
 
-class CoursesPage extends StatelessWidget {
+class CoursesPage extends ConsumerWidget {
   const CoursesPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final courses = CoursesData.getCourses();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coursesAsync = ref.watch(coursesStreamProvider);
+
+    final Widget content = coursesAsync.when(
+      data: (courses) => SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header Section
+            _buildHeader(context),
+
+            // Courses List
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: courses.map((coreCourse) {
+                  // Map backend/core Course to presentation CourseModel
+                  final item = CourseModel(
+                    id: coreCourse.chapter,
+                    title: coreCourse.title,
+                    videoUrl: coreCourse.videoLink ?? '',
+                    hasGeeksterLogo: false,
+                  );
+                  return CourseItem(course: item, courseDocId: coreCourse.id);
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, st) => Center(child: Text('Failed to load courses: $err')),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Stack(
         children: [
-          // Main scrollable content
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // Header Section
-                _buildHeader(context),
-                
-                // Courses List
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: courses.map((course) {
-                      return CourseItem(course: course);
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 40),
-              ],
-            ),
-          ),
+          // Main content (async)
+          content,
           // Decorative elements
           // Orange decorative element (right side)
           Positioned(
@@ -114,4 +129,3 @@ class CoursesPage extends StatelessWidget {
     );
   }
 }
-

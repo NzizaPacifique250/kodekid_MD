@@ -60,18 +60,23 @@ class ChapterProgressWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          // Chapter Title and Percentage
-          Text(
-            '${chapter.title}: ${chapter.progressPercentage}%',
-            style: AppTextStyles.bodyText(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+          // Chapter Title and Percentage — constrain to two lines to avoid
+          // expanding the grid cell height and causing overflow.
+          Flexible(
+            child: Text(
+              '${chapter.title}: ${chapter.progressPercentage}%',
+              style: AppTextStyles.bodyText(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              softWrap: true,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 }
-

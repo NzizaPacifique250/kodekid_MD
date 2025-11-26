@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
 import '../../../core/widgets/persistent_bottom_nav.dart';
 import '../../../routes/app_routes.dart';
-import '../data/dashboard_data.dart';
 import '../domain/chapter_progress_model.dart';
+import '../data/dashboard_data.dart';
+import '../../../core/providers/course_provider.dart';
+import '../../../core/providers/user_progress_provider.dart';
 import 'widgets/chapter_progress_widget.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userName = DashboardData.getCurrentUserName();
     
     return FutureBuilder<List<ChapterProgressModel>>(
@@ -27,6 +30,8 @@ class DashboardPage extends StatelessWidget {
             bottomNavigationBar: PersistentBottomNav(),
           );
         }
+    final coursesAsync = ref.watch(coursesOnceProvider);
+    final completedAsync = ref.watch(completedCoursesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -38,27 +43,69 @@ class DashboardPage extends StatelessWidget {
               children: [
                 // Header with Logo
                 _buildHeader(),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Greeting Section with Character
                 _buildGreetingSection(userName),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Ready to Code Section
                 _buildReadyToCodeSection(context),
-                
+
                 const SizedBox(height: 32),
-                
-                // Course Progress Section
-                _buildCourseProgressSection(chapters, context),
-                
+
+                // Course Progress Section (depends on courses + completed)
+                coursesAsync.when(
+                  data: (courses) {
+                    return completedAsync.when(
+                      data: (completed) {
+                        // Group courses by chapter so we show one card per chapter
+                        final grouped = <int, List<dynamic>>{};
+                        for (var c in courses) {
+                          grouped.putIfAbsent(c.chapter, () => []).add(c);
+                        }
+
+                        final chapters = grouped.entries.map((e) {
+                          final chapterNumber = e.key;
+                          final courseForChapter = e.value.first;
+                          final courseId = courseForChapter.id;
+                          final isCompleted =
+                              courseId != null && completed.contains(courseId);
+                          return ChapterProgressModel(
+                            chapterNumber: chapterNumber,
+                            title: courseForChapter.title ??
+                                'Chapter $chapterNumber',
+                            progressPercentage: isCompleted ? 100 : 0,
+                            completedStars: isCompleted ? 3 : 0,
+                            chapterColor: isCompleted
+                                ? AppColors.oliveGreen
+                                : AppColors.darkGrey,
+                          );
+                        }).toList()
+                          ..sort((a, b) =>
+                              a.chapterNumber.compareTo(b.chapterNumber));
+
+                        return _buildCourseProgressSection(chapters, context);
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, st) =>
+                          Center(child: Text('Progress load error: $e')),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, st) =>
+                      Center(child: Text('Courses load error: $e')),
+                ),
+
                 const SizedBox(height: 40),
-                
+
                 // Continue Coding Button
                 _buildContinueCodingButton(context),
-                
+
                 const SizedBox(height: 40),
               ],
             ),
@@ -247,6 +294,7 @@ class DashboardPage extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 24),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 24,
@@ -295,4 +343,3 @@ class DashboardPage extends StatelessWidget {
     );
   }
 }
-

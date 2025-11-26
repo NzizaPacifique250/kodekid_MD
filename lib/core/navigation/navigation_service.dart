@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
 
 class NavigationService {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
   static int currentBottomNavIndex = 0;
 
   static void navigateToBottomNav(int index) {
@@ -10,7 +11,7 @@ class NavigationService {
     String targetRoute;
     switch (index) {
       case 0:
-        targetRoute = AppRoutes.landing;
+        targetRoute = AppRoutes.home;
         break;
       case 1:
         targetRoute = AppRoutes.courses;
@@ -24,7 +25,7 @@ class NavigationService {
       default:
         return;
     }
-    
+
     navigatorKey.currentState?.pushNamedAndRemoveUntil(
       targetRoute,
       (route) {
@@ -39,7 +40,7 @@ class NavigationService {
 
   static int getCurrentIndexFromRoute(String? routeName) {
     switch (routeName) {
-      case AppRoutes.landing:
+      case AppRoutes.home:
         return 0;
       case AppRoutes.courses:
         return 1;
@@ -52,4 +53,3 @@ class NavigationService {
     }
   }
 }
-

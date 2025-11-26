@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/providers/theme_provider.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _notificationsEnabled = true;
   bool _soundEnabled = true;
 
@@ -55,27 +56,22 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
-          
           const SizedBox(height: 32),
-          
           _buildSettingsSection(
             'Appearance',
             [
-              Consumer<ThemeProvider>(
-                builder: (context, themeProvider, child) {
-                  return _buildSwitchTile(
-                    'Dark Mode',
-                    'Switch to dark theme',
-                    themeProvider.isDarkMode,
-                    (value) => themeProvider.toggleTheme(),
-                  );
-                },
-              ),
+              Builder(builder: (context) {
+                final themeProvider = context.watch<ThemeProvider>();
+                return _buildSwitchTile(
+                  'Dark Mode',
+                  'Switch to dark theme',
+                  themeProvider.isDarkMode,
+                  (value) => themeProvider.toggleTheme(value),
+                );
+              }),
             ],
           ),
-          
           const SizedBox(height: 32),
-          
           _buildSettingsSection(
             'Account',
             [
@@ -85,7 +81,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 Icons.lock_outline,
                 () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Change password feature coming soon!')),
+                    const SnackBar(
+                        content: Text('Change password feature coming soon!')),
                   );
                 },
               ),
@@ -95,7 +92,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 Icons.privacy_tip_outlined,
                 () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Privacy policy feature coming soon!')),
+                    const SnackBar(
+                        content: Text('Privacy policy feature coming soon!')),
                   );
                 },
               ),
@@ -105,7 +103,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 Icons.description_outlined,
                 () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Terms of service feature coming soon!')),
+                    const SnackBar(
+                        content: Text('Terms of service feature coming soon!')),
                   );
                 },
               ),

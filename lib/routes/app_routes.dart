@@ -1,5 +1,6 @@
 class AppRoutes {
   static const String landing = '/';
+  static const String home = '/home';
   static const String courses = '/courses';
   static const String lessonDetail = '/lesson-detail';
   static const String dashboard = '/dashboard';
@@ -12,4 +13,3 @@ class AppRoutes {
   static const String emailVerification = '/email-verification';
   static const String logout = '/logout';
 }
-
