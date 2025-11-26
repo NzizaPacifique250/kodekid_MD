@@ -16,9 +16,21 @@
 ## 📱 App Preview
 
 <div align="center">
-<img src="assets/screenshots/home-screen.png" width="300" alt="KodeKid Home Screen">
-<br>
-<em>🏠 Beautiful and intuitive home screen designed for kids</em>
+
+### 🏠 Home Page
+<img src="assets/screenshots/home_page.png" width="400" alt="KodeKid Home Page">
+
+### 📚 Courses
+<img src="assets/screenshots/courses.png" width="400" alt="KodeKid Courses">
+
+### 📊 Dashboard
+<img src="assets/screenshots/dashboard.png" width="400" alt="KodeKid Dashboard">
+
+### 👤 Profile
+<img src="assets/screenshots/profile.png" width="400" alt="KodeKid Profile">
+
+<em>✨ Complete app navigation showcasing all main features</em>
+
 </div>
 
 </div>
