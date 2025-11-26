@@ -17,6 +17,19 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName = DashboardData.getCurrentUserName();
+    
+    return FutureBuilder<List<ChapterProgressModel>>(
+      future: DashboardData.getChapterProgress(),
+      builder: (context, snapshot) {
+        final chapters = snapshot.data ?? [];
+        
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: AppColors.white,
+            body: Center(child: CircularProgressIndicator()),
+            bottomNavigationBar: PersistentBottomNav(),
+          );
+        }
     final coursesAsync = ref.watch(coursesOnceProvider);
     final completedAsync = ref.watch(completedCoursesProvider);
 
@@ -116,6 +129,8 @@ class DashboardPage extends ConsumerWidget {
         ],
       ),
       bottomNavigationBar: const PersistentBottomNav(),
+        );
+      },
     );
   }
 
