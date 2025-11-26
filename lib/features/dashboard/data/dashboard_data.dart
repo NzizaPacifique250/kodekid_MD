@@ -15,29 +15,29 @@ class DashboardData {
       ChapterProgressModel(
         chapterNumber: 1,
         title: 'Chapter 1',
-        progressPercentage: 55,
-        completedStars: 2, // 2 out of 3 stars filled
+        progressPercentage: 0,
+        completedStars: 0, // Start with 0 stars for new users
         chapterColor: AppColors.oliveGreen,
-      ),
-      ChapterProgressModel(
-        chapterNumber: 3,
-        title: 'Chapter 3',
-        progressPercentage: 75,
-        completedStars: 2,
-        chapterColor: AppColors.yellow,
       ),
       ChapterProgressModel(
         chapterNumber: 2,
         title: 'Chapter 2',
-        progressPercentage: 55,
-        completedStars: 2,
+        progressPercentage: 0,
+        completedStars: 0,
         chapterColor: AppColors.orange,
+      ),
+      ChapterProgressModel(
+        chapterNumber: 3,
+        title: 'Chapter 3',
+        progressPercentage: 0,
+        completedStars: 0,
+        chapterColor: AppColors.yellow,
       ),
       ChapterProgressModel(
         chapterNumber: 4,
         title: 'Chapter 4',
-        progressPercentage: 15,
-        completedStars: 1,
+        progressPercentage: 0,
+        completedStars: 0,
         chapterColor: AppColors.darkGrey,
       ),
     ];
