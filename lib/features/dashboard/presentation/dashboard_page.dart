@@ -14,7 +14,19 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userName = DashboardData.getCurrentUserName();
-    final chapters = DashboardData.getChapterProgress();
+    
+    return FutureBuilder<List<ChapterProgressModel>>(
+      future: DashboardData.getChapterProgress(),
+      builder: (context, snapshot) {
+        final chapters = snapshot.data ?? [];
+        
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: AppColors.white,
+            body: Center(child: CircularProgressIndicator()),
+            bottomNavigationBar: PersistentBottomNav(),
+          );
+        }
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -70,6 +82,8 @@ class DashboardPage extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: const PersistentBottomNav(),
+        );
+      },
     );
   }
 

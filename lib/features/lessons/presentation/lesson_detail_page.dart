@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
+import '../../../core/services/progress_service.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/data/auth_service.dart';
 import '../../home/data/courses_data.dart';
 import '../domain/lesson_model.dart';
 import '../data/lessons_data.dart';
@@ -445,10 +447,37 @@ class _LessonDetailPageState extends State<LessonDetailPage> {
   Widget _buildMarkAsCompleted() {
     return Center(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            isCompleted = !isCompleted;
-          });
+        onTap: () async {
+          final userId = AuthService.currentUser?.uid;
+          if (userId != null) {
+            try {
+              await ProgressService.updateLessonProgress(
+                userId,
+                widget.lessonId,
+                completed: !isCompleted,
+                code: currentCode,
+              );
+              setState(() {
+                isCompleted = !isCompleted;
+              });
+              
+              if (isCompleted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Lesson completed! 🎉'),
+                    backgroundColor: AppColors.darkGreen,
+                  ),
+                );
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error saving progress: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
