@@ -11,6 +11,16 @@
 
 [🎮 Live Demo](https://kodekid-demo.web.app) • [📱 Download APK](https://github.com/NzizaPacifique250/kodekid_MD/releases) • [🎨 Figma Design](https://www.figma.com/design/Ak1Nv1utUzyToWtE32JQBY/KodeKid---Kids-Learning-App--Copy-?node-id=0-1&p=f&t=gxIEbfEqq61KB3hp-0)
 
+<br>
+
+## 📱 App Preview
+
+<div align="center">
+<img src="assets/screenshots/home-screen.png" width="300" alt="KodeKid Home Screen">
+<br>
+<em>🏠 Beautiful and intuitive home screen designed for kids</em>
+</div>
+
 </div>
 
 ---
