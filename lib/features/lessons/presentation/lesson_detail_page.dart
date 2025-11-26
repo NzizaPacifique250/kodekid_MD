@@ -13,6 +13,7 @@ import '../../../core/services/user_progress_service.dart';
 import '../../../core/providers/user_progress_provider.dart';
 import '../../../core/services/firebase_service.dart';
 import 'widgets/code_editor_widget.dart';
+import 'web_video_player.dart';
 
 class LessonDetailPage extends ConsumerStatefulWidget {
   final int? lessonId;
@@ -289,13 +290,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
                     ),
                   ),
                 ),
-                // Play button (center)
-                const Positioned.fill(
-                  child: Center(
-                    child: Icon(
-                      Icons.play_circle_filled,
-                      color: AppColors.white,
-                      size: 70,
+                // Play button (center) - clickable
+                Positioned.fill(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _playVideo(context),
+                      child: const Center(
+                        child: Icon(
+                          Icons.play_circle_filled,
+                          color: AppColors.white,
+                          size: 70,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -694,5 +702,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       AppRoutes.lessonDetail,
       arguments: {'lessonId': lessonId},
     );
+  }
+
+  void _playVideo(BuildContext context) {
+    if (lesson.videoUrl.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WebVideoPlayer(videoUrl: lesson.videoUrl),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video not available')),
+      );
+    }
   }
 }

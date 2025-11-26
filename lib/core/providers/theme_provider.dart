@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
-// No Riverpod import here — this file provides a `ChangeNotifier` for `provider`.
+import '../services/preferences_service.dart';
 
 /// Classic provider ChangeNotifier-based theme provider (for `provider` package).
 class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false;
 
+  ThemeProvider() {
+    _loadThemePreference();
+  }
+
   bool get isDarkMode => _isDarkMode;
+
+  Future<void> _loadThemePreference() async {
+    _isDarkMode = await PreferencesService.isDarkMode();
+    notifyListeners();
+  }
 
   ThemeData get lightTheme => ThemeData(
         brightness: Brightness.light,
@@ -21,6 +30,7 @@ class ThemeProvider extends ChangeNotifier {
 
   void toggleTheme([bool? value]) {
     _isDarkMode = value ?? !_isDarkMode;
+    PreferencesService.setDarkMode(_isDarkMode);
     notifyListeners();
   }
 }

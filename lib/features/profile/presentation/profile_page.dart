@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/kodekid_logo.dart';
 import '../../../core/widgets/persistent_bottom_nav.dart';
 import '../../../routes/app_routes.dart';
-import '../../dashboard/data/dashboard_data.dart';
+import '../providers/user_profile_provider.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userName = DashboardData.getCurrentUserName();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -47,23 +48,31 @@ class ProfilePage extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // User Name
-            Text(
-              userName,
-              style: AppTextStyles.bodyText(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+            // User Name and Email
+            userProfileAsync.when(
+              data: (profile) => Column(
+                children: [
+                  Text(
+                    profile?.name ?? 'User',
+                    style: AppTextStyles.bodyText(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    profile?.email ?? 'user@kodekid.com',
+                    style: AppTextStyles.bodyText(
+                      fontSize: 16,
+                    ).copyWith(color: AppColors.darkGrey.withOpacity(0.6)),
+                  ),
+                ],
               ),
-            ),
-            
-            const SizedBox(height: 8),
-            
-            // User Email (placeholder)
-            Text(
-              '${userName.toLowerCase()}@kodekid.com',
-              style: AppTextStyles.bodyText(
-                fontSize: 16,
-              ).copyWith(color: AppColors.darkGrey.withOpacity(0.6)),
+              loading: () => const CircularProgressIndicator(),
+              error: (_, __) => Text(
+                'Error loading profile',
+                style: AppTextStyles.bodyText(fontSize: 16),
+              ),
             ),
             
             const SizedBox(height: 40),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/services/preferences_service.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -15,6 +16,27 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _notificationsEnabled = true;
   bool _soundEnabled = true;
+  bool _autoSaveEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final notifications = await PreferencesService.areNotificationsEnabled();
+    final sound = await PreferencesService.isSoundEnabled();
+    final autoSave = await PreferencesService.isAutoSaveEnabled();
+    
+    if (mounted) {
+      setState(() {
+        _notificationsEnabled = notifications;
+        _soundEnabled = sound;
+        _autoSaveEnabled = autoSave;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +68,28 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 'Push Notifications',
                 'Receive notifications about new lessons and updates',
                 _notificationsEnabled,
-                (value) => setState(() => _notificationsEnabled = value),
+                (value) async {
+                  await PreferencesService.setNotificationsEnabled(value);
+                  setState(() => _notificationsEnabled = value);
+                },
               ),
               _buildSwitchTile(
                 'Sound',
                 'Play sounds for notifications and interactions',
                 _soundEnabled,
-                (value) => setState(() => _soundEnabled = value),
+                (value) async {
+                  await PreferencesService.setSoundEnabled(value);
+                  setState(() => _soundEnabled = value);
+                },
+              ),
+              _buildSwitchTile(
+                'Auto-Save Progress',
+                'Automatically save your lesson progress',
+                _autoSaveEnabled,
+                (value) async {
+                  await PreferencesService.setAutoSaveEnabled(value);
+                  setState(() => _autoSaveEnabled = value);
+                },
               ),
             ],
           ),
@@ -66,7 +103,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   'Dark Mode',
                   'Switch to dark theme',
                   themeProvider.isDarkMode,
-                  (value) => themeProvider.toggleTheme(value),
+                  (value) async {
+                    await PreferencesService.setDarkMode(value);
+                    themeProvider.toggleTheme(value);
+                  },
                 );
               }),
             ],

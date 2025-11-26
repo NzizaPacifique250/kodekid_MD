@@ -1,27 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/widgets/kodekid_logo.dart';
-import '../../dashboard/data/dashboard_data.dart';
+import '../providers/user_profile_provider.dart';
 
-class EditProfilePage extends StatefulWidget {
+class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  ConsumerState<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _emailController;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    final userName = DashboardData.getCurrentUserName();
-    _nameController = TextEditingController(text: userName);
-    _emailController = TextEditingController(text: '${userName.toLowerCase()}@kodekid.com');
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    
+    // Initialize controllers with current profile data
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final profile = await ref.read(userProfileProvider.future);
+        if (profile != null && mounted) {
+          _nameController.text = profile.name;
+          _emailController.text = profile.email;
+        }
+      } catch (e) {
+        // Handle error silently
+      }
+    });
   }
 
   @override
@@ -153,17 +166,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profile updated successfully!'),
-                          backgroundColor: AppColors.lightBlue,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
+                  onPressed: _isLoading ? null : _saveProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.lightBlue,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -171,13 +174,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    'Save Changes',
-                    style: AppTextStyles.bodyText(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ).copyWith(color: AppColors.white),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: AppColors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Save Changes',
+                          style: AppTextStyles.bodyText(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ).copyWith(color: AppColors.white),
+                        ),
                 ),
               ),
             ],
@@ -185,5 +197,47 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final success = await ref.read(userProfileUpdateProvider).updateProfile(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+      );
+
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile updated successfully!'),
+              backgroundColor: AppColors.lightBlue,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to update profile. Please try again.'),
+              backgroundColor: AppColors.orange,
+            ),
+          );
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }
