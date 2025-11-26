@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -224,6 +225,43 @@ class AuthService {
       }
     }
     return null;
+  }
+
+  // Google Sign-In
+  static Future<Map<String, dynamic>> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      
+      if (googleUser == null) {
+        return {'success': false, 'message': 'Google sign-in was cancelled'};
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      
+      if (userCredential.user != null) {
+        // Save user data to Firestore
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'name': userCredential.user!.displayName ?? 'Google User',
+          'email': userCredential.user!.email ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+          'emailVerified': true,
+          'provider': 'google',
+        }, SetOptions(merge: true));
+        
+        return {'success': true, 'message': 'Google sign-in successful'};
+      }
+      
+      return {'success': false, 'message': 'Google sign-in failed'};
+    } catch (e) {
+      return {'success': false, 'message': 'Google sign-in error: ${e.toString()}'};
+    }
   }
 
   // Handle existing unverified account

@@ -177,6 +177,30 @@ class _LoginPageState extends State<LoginPage> {
                     
                     const SizedBox(height: 24),
                     
+                    // OR Divider
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: AppColors.lightGrey)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'OR',
+                            style: AppTextStyles.bodyText().copyWith(
+                              color: AppColors.darkGrey,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: AppColors.lightGrey)),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Google Sign-In Button
+                    _buildGoogleSignInButton(),
+                    
+                    const SizedBox(height: 24),
+                    
                     // Register Link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -324,6 +348,73 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ],
     );
+  }
+
+  Widget _buildGoogleSignInButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.lightGrey),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: _isLoading ? null : _handleGoogleSignIn,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.g_mobiledata,
+                size: 24,
+                color: AppColors.darkGrey,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Continue with Google',
+                style: AppTextStyles.bodyText(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await AuthService.signInWithGoogle();
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (mounted) {
+      if (result['success']) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.dashboard,
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['message'] ?? 'Google sign-in failed',
+              style: AppTextStyles.bodyText(),
+            ),
+            backgroundColor: AppColors.orange,
+          ),
+        );
+      }
+    }
   }
 }
 
