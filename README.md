@@ -17,17 +17,9 @@
 
 <div align="center">
 
-### 🏠 Home Page
-<img src="assets/screenshots/home_page.png" width="400" alt="KodeKid Home Page">
+<img src="assets/screenshots/home_page.png" width="200" alt="Home Page"> <img src="assets/screenshots/courses.png" width="200" alt="Courses"> <img src="assets/screenshots/dashboard.png" width="200" alt="Dashboard"> <img src="assets/screenshots/profile.png" width="200" alt="Profile">
 
-### 📚 Courses
-<img src="assets/screenshots/courses.png" width="400" alt="KodeKid Courses">
-
-### 📊 Dashboard
-<img src="assets/screenshots/dashboard.png" width="400" alt="KodeKid Dashboard">
-
-### 👤 Profile
-<img src="assets/screenshots/profile.png" width="400" alt="KodeKid Profile">
+**🏠 Home Page** • **📚 Courses** • **📊 Dashboard** • **👤 Profile**
 
 <em>✨ Complete app navigation showcasing all main features</em>
 
@@ -91,36 +83,36 @@
 <td align="center">
 <a href="https://github.com/Aman-Kasa">
 <img src="https://github.com/Aman-Kasa.png" width="100px;" alt="Aman"/><br />
-<sub><b>🚀 Aman</b></sub><br />
-<sub>Frontend Developer</sub>
+<sub><b>🚀 Aman A. Kasa</b></sub><br />
+<sub>Frontend logic, API integration, SRC documentation</sub>
 </a>
 </td>
 <td align="center">
 <a href="https://github.com/NzizaPacifique250">
 <img src="https://github.com/NzizaPacifique250.png" width="100px;" alt="Pacific"/><br />
-<sub><b>🌊 Pacific</b></sub><br />
-<sub>Project Lead</sub>
+<sub><b>🌊 Nziza Aime Pacifique</b></sub><br />
+<sub>Home page & Dashboard implementation</sub>
 </a>
 </td>
 <td align="center">
 <a href="https://github.com/aimable0">
 <img src="https://github.com/aimable0.png" width="100px;" alt="Aimable"/><br />
-<sub><b>🎯 Aimable</b></sub><br />
-<sub>Backend Developer</sub>
+<sub><b>🎯 Aimable Nkurikiyimana</b></sub><br />
+<sub>Backend logic, Database design & Figma</sub>
 </a>
 </td>
 <td align="center">
 <a href="https://github.com/Yvantrey">
 <img src="https://github.com/Yvantrey.png" width="100px;" alt="Yvan"/><br />
-<sub><b>⚡ Yvan</b></sub><br />
-<sub>UI/UX Designer</sub>
+<sub><b>⚡ Yvan Nziza Rugamba</b></sub><br />
+<sub>Contact & About pages, report design</sub>
 </a>
 </td>
 <td align="center">
 <a href="https://github.com/Millowise01">
 <img src="https://github.com/Millowise01.png" width="100px;" alt="Millowise"/><br />
-<sub><b>🧠 Millowise</b></sub><br />
-<sub>Full Stack Developer</sub>
+<sub><b>🧠 Leroy Milfred Carew</b></sub><br />
+<sub>Courses page & single course page</sub>
 </a>
 </td>
 </tr>
