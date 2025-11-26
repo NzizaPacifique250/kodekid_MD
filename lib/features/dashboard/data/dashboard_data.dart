@@ -6,7 +6,7 @@ class DashboardData {
   // Get current user name from auth service
   static String getCurrentUserName() {
     final userName = AuthService.currentUserName;
-    return userName ?? 'User'; // Default to 'User' if not logged in
+    return userName.isNotEmpty ? userName : 'User'; // Default to 'User' if not logged in
   }
 
   // Get chapter progress data

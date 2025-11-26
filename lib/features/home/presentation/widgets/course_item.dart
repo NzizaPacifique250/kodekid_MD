@@ -4,7 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../routes/app_routes.dart';
 import '../../domain/course_model.dart';
-import '../../../lessons/presentation/video_player_page.dart';
+
 
 class CourseItem extends ConsumerWidget {
   final CourseModel course;
